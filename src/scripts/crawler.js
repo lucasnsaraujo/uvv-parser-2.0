@@ -1,4 +1,5 @@
 import puppeteer from "puppeteer";
+import PostsRepository from "../repositories/PostsRepository.js";
 
 const LOGIN_PAGE_URL = "https://aluno.uvv.br/";
 
@@ -57,13 +58,12 @@ async function crawler(credentials, options) {
         link: item.href,
       })
     );
-    const title = await page.$eval(".page-header", (item) => item.innerText);
+    const title = await page.$eval(".page-header", (item) =>
+      item.innerText.toString().replaceAll('"', "").replaceAll("//", "")
+    );
     const teacher = await page.$eval(
       "h4.pull-left > strong",
       (item) => item.innerText
-    );
-    const content = await page.$eval("div.panel-body", (item) =>
-      item.innerHTML.trim()
     );
     const comments = await page.$$eval(".box-conversas", (items) =>
       items.map((item) => {
@@ -73,7 +73,13 @@ async function crawler(credentials, options) {
       })
     );
     console.log(`✔ Parsed post n° ${current_page}!`);
-    return { subject, title, teacher, content, comments };
+    return {
+      subject,
+      title,
+      teacher,
+      comments,
+      post_url: `${POST_BASE_URL}${current_page}`,
+    };
   }
 
   // Starting browser
@@ -86,11 +92,34 @@ async function crawler(credentials, options) {
 
   console.log("> Logged in");
 
-  for (let current_page = 1; current_page < LAST_KNOWN_POST; current_page++) {
+  const last_registered_post = await PostsRepository.findLastPost();
+  console.log({ last_registered_post });
+  const starting_id = last_registered_post?.post_id
+    ? Number(last_registered_post?.post_id) + 1
+    : 1;
+  console.log(starting_id);
+
+  for (
+    let current_page = starting_id;
+    current_page < LAST_KNOWN_POST;
+    current_page++
+  ) {
+    console.log("> Continuing from " + current_page);
     const isAskingForLogin = await checkIfLoggedOut();
     if (isAskingForLogin) await login();
     try {
-      const content = await crawlPage(current_page);
+      const { comments, content, subject, teacher, title, post_url } =
+        await crawlPage(current_page);
+      await PostsRepository.createPost({
+        title,
+        subject: subject.name,
+        subject_url: subject.link,
+        teacher,
+        comments: JSON.stringify(comments),
+        post_url,
+        post_id: current_page,
+      });
+      console.log("> Post registrado no banco.");
     } catch (error) {
       console.log(`Error on post ${current_page}. Going on to the next...`);
     }

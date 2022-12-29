@@ -6,7 +6,7 @@ import { crawler } from "./scripts/crawler.js";
 const app = express();
 
 app.use(express.json());
-//app.use(routes);
+app.use(routes);
 
 let PORT;
 const { CURRENT_ENV } = process.env;
