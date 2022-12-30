@@ -16,13 +16,12 @@ if (["production", "development"].includes(CURRENT_ENV)) {
   PORT = 1234;
 }
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`🔥 Running on port ${PORT} in ${CURRENT_ENV ?? "localhost"}`);
+  await crawler(localLogin);
 });
 
 const localLogin = {
   login: "202088349",
   password: "03100123",
 };
-
-await crawler(localLogin);

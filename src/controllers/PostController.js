@@ -5,7 +5,7 @@ class PostController {
     return res.status(200).json(posts);
   }
   async show(req, res) {
-    const { id } = request.params;
+    const { id } = req.params;
     const post = await PostsRepository.findByPostId(id);
     return res.status(200).json(post);
   }
