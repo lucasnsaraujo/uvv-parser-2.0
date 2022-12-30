@@ -8,6 +8,8 @@ const LAST_KNOWN_POST = 693715;
 
 const { CURRENT_ENV } = process.env;
 
+const RESTART_INTERVAL = 500; // posts
+
 // APAGA ESSA MIZERA
 const localLogin = {
   login: "202088349",
@@ -18,7 +20,7 @@ const credentials = ["production", "development"].includes(CURRENT_ENV)
   ? { login: process.env.USER_LOGIN, password: process.env.USER_PASSWORD }
   : localLogin;
 
-async function crawler(credentials, options) {
+async function first_crawler(credentials, options) {
   const BROWSER_OPTIONS = {
     headless: true,
     args: [
@@ -89,8 +91,8 @@ async function crawler(credentials, options) {
   }
 
   // Starting browser
-  const browser = await puppeteer.launch(BROWSER_OPTIONS);
-  const page = await browser.newPage();
+  let browser = await puppeteer.launch(BROWSER_OPTIONS);
+  var page = await browser.newPage();
   await page.goto(LOGIN_PAGE_URL, NAVIGATION_OPTIONS);
   console.log("> Entered login page");
 
@@ -99,14 +101,13 @@ async function crawler(credentials, options) {
   console.log("> Logged in");
 
   const last_registered_post = await PostsRepository.findLastPost();
-  console.log({ last_registered_post });
   const starting_id = last_registered_post?.post_id
     ? Number(last_registered_post?.post_id) + 1
     : 1;
   console.log("> Starting from " + starting_id);
   for (
     let current_page = starting_id;
-    current_page < LAST_KNOWN_POST;
+    current_page < starting_id + RESTART_INTERVAL;
     current_page++
   ) {
     const isAskingForLogin = await checkIfLoggedOut();
@@ -133,6 +134,19 @@ async function crawler(credentials, options) {
   }
 
   await browser.close();
+}
+
+async function crawler(credentials, options) {
+  for (
+    let count = 0;
+    count < Math.floor(LAST_KNOWN_POST / RESTART_INTERVAL);
+    count++
+  ) {
+    if (count > 0) {
+      console.log("> Restarting browser");
+    }
+    await first_crawler(credentials, options);
+  }
 }
 
 export { crawler };

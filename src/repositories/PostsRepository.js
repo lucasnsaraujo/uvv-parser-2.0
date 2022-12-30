@@ -9,9 +9,7 @@ class PostsRepository {
     return row;
   }
   async findLastPost() {
-    const [row] = await db.query(
-      "SELECT * FROM POSTS ORDER BY post_id DESC LIMIT 1"
-    );
+    const [row] = await db.query("SELECT MAX(post_id) FROM posts");
     return row;
   }
   async findAll() {
