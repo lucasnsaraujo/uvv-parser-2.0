@@ -10,12 +10,6 @@ const { CURRENT_ENV } = process.env;
 
 const RESTART_INTERVAL = 500; // posts
 
-// APAGA ESSA MIZERA
-const localLogin = {
-  login: "202088349",
-  password: "03100123",
-};
-
 const credentials = ["production", "development"].includes(CURRENT_ENV)
   ? { login: process.env.USER_LOGIN, password: process.env.USER_PASSWORD }
   : localLogin;
