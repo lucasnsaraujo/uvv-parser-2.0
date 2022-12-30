@@ -1,6 +1,13 @@
 import db from "../database/index.js";
 
 class PostsRepository {
+  async findByPostId(post_id) {
+    const [row] = await db.query({
+      text: `SELECT * FROM posts WHERE post_id = $1;`,
+      values: [post_id],
+    });
+    return row;
+  }
   async findLastPost() {
     const [row] = await db.query(
       "SELECT * FROM POSTS ORDER BY post_id DESC LIMIT 1"

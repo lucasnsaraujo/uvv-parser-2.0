@@ -21,7 +21,13 @@ const credentials = ["production", "development"].includes(CURRENT_ENV)
 async function crawler(credentials, options) {
   const BROWSER_OPTIONS = {
     headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--ignore-certificate-errors",
+      "--disable-accelerated-2d-canvas",
+      "--disable-gpu",
+    ],
   };
   const NAVIGATION_OPTIONS = {
     waitUntil: "networkidle2",
@@ -97,19 +103,21 @@ async function crawler(credentials, options) {
   const starting_id = last_registered_post?.post_id
     ? Number(last_registered_post?.post_id) + 1
     : 1;
-  console.log(starting_id);
-
+  console.log("> Starting from " + starting_id);
   for (
     let current_page = starting_id;
     current_page < LAST_KNOWN_POST;
     current_page++
   ) {
-    console.log("> Continuing from " + current_page);
     const isAskingForLogin = await checkIfLoggedOut();
-    if (isAskingForLogin) await login();
+    if (isAskingForLogin) {
+      console.log("> Asking for login.");
+      await login();
+    }
     try {
-      const { comments, content, subject, teacher, title, post_url } =
-        await crawlPage(current_page);
+      const { comments, subject, teacher, title, post_url } = await crawlPage(
+        current_page
+      );
       await PostsRepository.createPost({
         title,
         subject: subject.name,
@@ -119,7 +127,6 @@ async function crawler(credentials, options) {
         post_url,
         post_id: current_page,
       });
-      console.log("> Post registrado no banco.");
     } catch (error) {
       console.log(`Error on post ${current_page}. Going on to the next...`);
     }

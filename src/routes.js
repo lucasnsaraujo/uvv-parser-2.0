@@ -4,11 +4,12 @@ import PostController from "./controllers/PostController.js";
 
 const router = Router();
 
-router.get("/api/posts", PostController.index);
+router.get("/api/posts/:id", PostController.show);
 router.get("/", (req, res) => {
   res.send(
-    '<a href="https://uvv.up.railway.app/api/posts">CLICA AQUI MANITO</a>'
+    "<h2>VAI PRA /api/posts/{ID_DE_ALGUM_POST}</h2><h2>ou /api/posts/last PARA O ULTIMO POST NO BANCO</h2>"
   );
 });
+router.get("/api/posts/last", PostController.lastPost);
 
 export default router;
