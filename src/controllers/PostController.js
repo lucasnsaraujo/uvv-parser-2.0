@@ -11,6 +11,9 @@ class PostController {
   }
   async lastPost(req, res) {
     const last_post = await PostsRepository.findLastPost();
+    if (!last_post) {
+      return res.status(400).json({ error: "Post not found" });
+    }
     return res.status(200).json(last_post);
   }
 }
