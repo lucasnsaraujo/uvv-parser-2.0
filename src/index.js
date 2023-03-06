@@ -24,5 +24,5 @@ const credentials = ["production", "development"].includes(CURRENT_ENV)
 
 app.listen(PORT, async () => {
   console.log(`🔥 Running on port ${PORT} in ${CURRENT_ENV ?? "localhost"}`);
-  await crawler(credentials);
+  // await crawler(credentials);
 });
