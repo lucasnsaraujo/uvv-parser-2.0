@@ -1,6 +1,10 @@
 import db from "../database/index.js";
 
 class PostsRepository {
+  async findSaulo() {
+    const row = await db.query("SELECT * FROM posts WHERE subject = 'Computação Gráfica';");
+    return row;
+  }
   async findByPostId(post_id) {
     const [row] = await db.query({
       text: `SELECT * FROM posts WHERE post_id = $1;`,
