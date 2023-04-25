@@ -4,6 +4,7 @@ import PostController from "./controllers/PostController.js";
 
 const router = Router();
 
+router.get("/api/saulo", PostController.saulo )
 router.get("/api/posts/:id", PostController.show);
 router.get("/", (req, res) => {
   res.send(
